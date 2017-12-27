@@ -1,0 +1,269 @@
+﻿@model HireATutor.Models.Gig
+
+@{
+    ViewBag.Title = "View Gig";
+}
+
+<h2>@Html.DisplayFor(model => model.gigName)</h2>
+<input hidden id="instructorId" value="@Html.DisplayFor(model => model.instructor_Id)" />
+<input hidden id="gigId" value="@Html.DisplayFor(model => model.gigId)" />
+
+<div>
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.category.catName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.category.catName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.gigDesc)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.gigDesc)
+        </dd>
+
+        <dt>
+            Instructor
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.instructor.UserName)
+        </dd>
+    </dl>
+</div>
+
+<div style="margin-bottom:0px;" class="row">
+    <div style="text-align: center;background: rgba(150, 150, 150, 0.74);" class="col-md-9"><h4>Packages</h4></div>
+</div>
+<div class="row row-eq-height">
+    <div style="text-align: center;background: rgba(45, 157, 1, 0.74);" class="col-md-3">
+        <h4>Economy</h4>
+        <span>@Html.DisplayFor(model => model.PackageA.packageDesc)</span><br /><br />
+        <h4>Price: @Html.DisplayFor(model => model.PackageA.price)</h4>
+        <input type="hidden" id="pacAPrice" value="@Html.DisplayFor(model => model.PackageA.price)" />
+
+        @{
+            if (User.IsInRole("Student"))
+            {
+                <button class="btn btn-primary order-type" id="btn-eco">Order now</button>
+            }
+        }
+    </div>
+    <div style="text-align: center;background: rgba(77, 109, 224, 0.74);" class="col-md-3">
+        <h4>Regular</h4>
+        <span>@Html.DisplayFor(model => model.PackageB.packageDesc)</span><br /><br />
+        <h4>Price: @Html.DisplayFor(model => model.PackageB.price)</h4>
+        <input type="hidden" id="pacBPrice" value="@Html.DisplayFor(model => model.PackageB.price)" />
+
+        @{
+            if (User.IsInRole("Student"))
+            {
+                <button class="btn btn-primary order-type" id="btn-reg">Order now</button>
+            }
+        }
+    </div>
+    <div style="text-align: center;background: rgba(134, 39, 39, 0.74);" class="col-md-3">
+        <h4>Exclusive</h4>
+        <span>@Html.DisplayFor(model => model.PackageC.packageDesc)</span><br /><br />
+        <h4>Price: @Html.DisplayFor(model => model.PackageC.price)</h4>
+        <input type="hidden" id="pacCPrice" value="@Html.DisplayFor(model => model.PackageC.price)" />
+
+        @{
+            if (User.IsInRole("Student"))
+            {
+                <button class="btn btn-primary order-type" id="btn-exc">Order now</button>
+            }
+        }
+    </div>
+</div>
+
+@{
+    if (User.IsInRole("Student"))
+    {
+        <div style="display: none" id="orderPanel">
+            <div class="row">
+                <div class='col-sm-3'>
+                    <h4>Place order</h4>
+                    <p>Date</p>
+                    <div class="form-group">
+                        <div class='input-group date' id='dtpSchedule'>
+                            <input type='text' class="form-control" />
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <p>Timeframe</p>
+                    <div class="form-group">
+                        <select id="timeframes" class="form-control">
+                            @foreach (var item in ViewBag.Timeframes)
+                            {
+                            <option value=@item.timeframeId>@item.timeFromOnly - @item.timeToOnly</option>
+                            }
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" id="checkAvail">Check availability</button><br /><br />
+
+                    <p>Total: <span id="totalPrice"></span></p>
+
+                    <button class="btn btn-primary" disabled id="btn-order">Order now</button>
+                    <button class="btn btn-primary" id="btn-cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+
+        <script>
+            var orderType = '';
+            var orderPrice = 0;
+
+            jQuery(function () {
+                jQuery('#dtpSchedule').datetimepicker({
+                    useCurrent: true
+                });
+            });
+
+            function showCal(e) {
+                orderType = e.data.type;
+                orderPrice = jQuery("#pac" + orderType + "Price").val();
+                jQuery("#totalPrice").text(orderPrice);
+
+                jQuery('#orderPanel').show({
+                    animation: 'fade',
+                    animationspeed: 150
+                });
+
+                jQuery(".order-type").hide({
+                    animation: 'fade',
+                    animationspeed: 150
+                });
+
+                var curDate = new Date();
+                curDate.setSeconds(0);
+                curDate.setMinutes(0);
+                curDate.setHours(0);
+                curDate.setDate(curDate.getDate()+1);
+
+                jQuery('#dtpSchedule').data("DateTimePicker").date(curDate);
+                return false;
+            }
+
+            function cancelOrder() {
+                jQuery('#orderPanel').hide({
+                    animation: 'fade',
+                    animationspeed: 150
+                });
+
+                jQuery(".order-type").show({
+                    animation: 'fade',
+                    animationspeed: 150
+                });
+            }
+
+            function checkAvail() {
+                checkAvailCore();
+            }
+
+            function checkAvailCore() {
+                $('#btn-order').prop('disabled', false);
+
+                var dateNow = new Date();
+                var dateB = jQuery('#dtpSchedule').data("DateTimePicker").date()._d;
+
+                if (+dateB < +dateNow) {
+                    alert("Please select a future date...");
+                    $('#btn-order').prop('disabled', true);
+                }
+
+                jQuery.ajax({
+                    type: "GET",
+                    url: "/api/schedules/" + jQuery("#instructorId").val()
+                }).done(function (data) {
+                    data.forEach(function (element) {
+                        var dateA = new Date(element.scheduleDate);
+
+                        if (+dateA === +dateB && element.timeframeId == jQuery("#timeframes").val()) {
+                            alert('Sorry, the selected period is not available...');
+                            $('#btn-order').prop('disabled', true);
+                        }
+                    });
+                });
+
+                return true;
+            }
+
+            function orderNow() {
+                if (checkAvailCore() == true) {
+                    if ($('#btn-order').prop('disabled') == true) {
+                        return false;
+                    }
+
+                    var packageType = -1;
+                    switch (orderType) {
+                        case "A":
+                            packageType = 1;
+                        case "B":
+                            packageType = 2;
+                        case "C":
+                            packageType = 3;
+                    }
+
+                    var scheduleDate = jQuery('#dtpSchedule').data("DateTimePicker").date()._d;
+                    if (scheduleDate.getHours() > 0) {
+                        today.setHours(today.getHours() + (24 - scheduleDate.getHours()));
+                    }
+
+                    scheduleDate.setTime(scheduleDate.getTime() - scheduleDate.getTimezoneOffset() * 60 * 1000);
+
+                    console.log("Schedule date", scheduleDate);
+
+                    var data = {
+                        scheduleDate: scheduleDate,
+                        timeframeId: jQuery("#timeframes").val(),
+                        studentId: "",
+                        gigId: jQuery("#gigId").val(),
+                        packageType: packageType,
+                        dateCreated: new Date(),
+                        status: 0
+                    }
+
+                    jQuery.ajax({
+                        type: "POST",
+                        url: "/api/schedules/",
+                        data: JSON.stringify(data),
+                        contentType: 'application/json',
+                        dataType: 'json'
+                    }).done(function (data) {
+                        console.log(data);
+                        alert("Order successful!");
+                        window.location.href = '/Home/MySchedules/';
+                    })
+                    .fail(function (jqXHR, textStatus) {
+                        alert('Error: ' + textStatus);
+                    });
+                }
+            }
+
+            jQuery('#btn-order').on('click', {}, orderNow);
+            jQuery('#btn-cancel').on('click', {}, cancelOrder);
+
+            jQuery('#btn-eco').on('click', { type: 'A' }, showCal);
+            jQuery('#btn-reg').on('click', { type: 'B' }, showCal);
+            jQuery('#btn-exc').on('click', { type: 'C' }, showCal);
+
+            jQuery('#checkAvail').on('click', {}, checkAvail);
+        </script>
+    }
+}
+
+@if (User.IsInRole("Instructor"))
+{
+    <a href="/Home/MyGigs">My Gigs</a>
+}

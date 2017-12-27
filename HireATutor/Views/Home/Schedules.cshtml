@@ -1,0 +1,69 @@
+﻿@model IEnumerable<HireATutor.Models.Schedule>
+
+@{
+    ViewBag.Title = "My Schedules";
+}
+
+<h2>My Schedules</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.gig.gigName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.packageTypeStr)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.scheduleDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.timeframe.timeframeId)
+        </th>
+        <th>
+            @if (User.IsInRole("Instructor"))
+            {
+            <span>Student</span>
+            }
+            @if (User.IsInRole("Student"))
+            {
+            <span>Instructor</span>
+            }
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.dateCreated)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.gig.gigName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.packageTypeStr)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.scheduleDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.timeframe.timeFromOnly) - @Html.DisplayFor(modelItem => item.timeframe.timeToOnly)
+        </td>
+        <td>
+            @if (User.IsInRole("Instructor"))
+            {
+            @Html.DisplayFor(modelItem => item.student.Email)
+            }
+            @if (User.IsInRole("Student"))
+            {
+            @Html.DisplayFor(modelItem => item.gig.instructor.Email)
+            }
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.dateCreated)
+        </td>
+    </tr>
+}
+
+</table>

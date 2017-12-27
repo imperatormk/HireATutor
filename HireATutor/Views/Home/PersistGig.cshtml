@@ -1,0 +1,130 @@
+﻿@model HireATutor.Models.Gig
+
+<h2>@ViewBag.Title</h2>
+
+<form id="persistGigForm">
+    <div class="form-horizontal">
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.catId, "Category", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <select id="categories" class="form-control">
+                    @foreach (var item in ViewBag.Categories)
+                    {
+                    <option value=@item.catId>@item.catName</option>
+                    }
+                </select>
+
+                @Html.ValidationMessageFor(model => model.catId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.gigName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.gigName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.gigName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.gigDesc, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.gigDesc, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.gigDesc, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div style="margin-bottom:0px;" class="row">
+                <div style="text-align: center;background: rgba(150, 150, 150, 0.74);" class="col-md-9"><h4>Packages</h4></div>
+            </div>
+            <div class="row row-eq-height">
+                <div style="text-align: center;background: rgba(45, 157, 1, 0.74);" class="col-md-3">
+                    <h4>Economy</h4>
+                    <label>Price&nbsp;</label><input type="number" id="pacAPrice" value=10 /><br /><br />
+                    @Html.LabelFor(model => model.PackageA.packageDesc, htmlAttributes: new { @class = "control-label col-md-2" })
+                    @Html.TextAreaFor(model => model.PackageA.packageDesc, new { @class = "form-control", @rows = 7, @id = "pacADesc" })
+                    @Html.ValidationMessageFor(model => model.PackageA.packageDesc, "", new { })
+                </div>
+                <div style="text-align: center;background: rgba(77, 109, 224, 0.74);" class="col-md-3">
+                    <h4>Regular</h4>
+                    <label>Price&nbsp;</label><input type="number" id="pacBPrice" value=20 /><br /><br />
+                    @Html.LabelFor(model => model.PackageB.packageDesc, htmlAttributes: new { @class = "control-label col-md-2" })
+                    @Html.TextAreaFor(model => model.PackageB.packageDesc, new { @class = "form-control", @rows = 7, @id = "pacBDesc" })
+                    @Html.ValidationMessageFor(model => model.PackageB.packageDesc, "", new { })
+                </div>
+                <div style="text-align: center;background: rgba(134, 39, 39, 0.74);" class="col-md-3">
+                    <h4>Exclusive</h4>
+                    <label>Price&nbsp;</label><input type="number" id="pacCPrice" value=50 /><br /><br />
+                    @Html.LabelFor(model => model.PackageC.packageDesc, htmlAttributes: new { @class = "control-label col-md-2" })
+                    @Html.TextAreaFor(model => model.PackageC.packageDesc, new { @class = "form-control", @rows = 7, @id = "pacCDesc" })
+                    @Html.ValidationMessageFor(model => model.PackageC.packageDesc, "", new { })
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div>
+    @Html.ActionLink("Back to My Gigs", "MyGigs")
+</div>
+
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+
+<script>
+    $(document).on('submit', '#persistGigForm', function () {
+
+        var catId = jQuery("#categories").val();
+        var gigName = jQuery("#gigName").val();
+        var gigDesc = jQuery("#gigDesc").val();
+
+        var pacAPrice = jQuery("#pacAPrice").val();
+        var pacBPrice = jQuery("#pacBPrice").val();
+        var pacCPrice = jQuery("#pacCPrice").val();
+
+        var pacADesc = jQuery("#pacADesc").val();
+        var pacBDesc = jQuery("#pacBDesc").val();
+        var pacCDesc = jQuery("#pacCDesc").val();
+
+        var data = {
+            catId: catId,
+            gigName: gigName,
+            gigDesc: gigDesc,
+            Packages: [{
+                packageType: 1,
+                packageDesc: pacADesc,
+                price: pacAPrice
+            },
+            {
+                packageType: 2,
+                packageDesc: pacBDesc,
+                price: pacBPrice
+            },
+            {
+                packageType: 3,
+                packageDesc: pacCDesc,
+                price: pacCPrice
+            }]
+        };
+
+        jQuery.ajax({
+            type: "POST",
+            url: "/api/gigs",
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json'
+        }).done(function (data) {
+            window.location.href = '/Home/Gig/' + data.gigId;
+        })
+        .fail(function (jqXHR, textStatus) {
+            alert('Error: ' + textStatus);
+        });
+        return false;
+    });
+</script>

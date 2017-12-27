@@ -1,0 +1,67 @@
+﻿@model IEnumerable<HireATutor.Models.Gig>
+
+@{
+    ViewBag.Title = "My Gigs";
+}
+
+<h2>My Gigs</h2>
+
+<p>
+    @Html.ActionLink("Create New", "AddGig")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.category.catName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.gigName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.gigDesc)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.ActionLink(item.category.catName, "Category", new { id = item.catId })
+        </td>
+        <td>
+            @Html.ActionLink(item.gigName, "Gig", new { id = item.gigId })
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.gigDesc)
+        </td>
+        <td>
+            @Html.ActionLink("View", "Gig", new { id = item.gigId }) |
+            <!---@Html.ActionLink("Edit", "EditGig", new { id = item.gigId }) | -->
+
+            <a href="#" class="deleteGig" id=@item.gigId>Delete</a>
+        </td>
+    </tr>
+}
+</table>
+
+<script>
+    $('.deleteGig').click(function (event) {
+        var gigId = event.target.id;
+
+        if (confirm("Delete gig?")) {
+            jQuery.ajax({
+                type: "DELETE",
+                url: "/api/gigs/" + gigId,
+                data: JSON.stringify({ id: gigId }),
+                contentType: 'application/json',
+                dataType: 'json'
+            }).done(function (data) {
+                window.location.href = '/Home/MyGigs/';
+            })
+            .fail(function (jqXHR, textStatus) {
+                alert('Error: ' + textStatus);
+            });
+            return false;
+        }
+    });
+</script>
